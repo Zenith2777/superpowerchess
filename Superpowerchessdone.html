@@ -1,0 +1,2436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Superpower Chess - Ultimate Edition</title>
+    <style>
+        :root {
+            --dark-bg: #1a1a1a;
+            --light-bg: #2d2d2d;
+            --highlight: #4CAF50;
+            --highlight-dark: #3e8e41;
+            --text: #f0f0f0;
+            --text-dark: #cccccc;
+            --white-square: #f0d9b5;
+            --black-square: #b58863;
+            --selected: rgba(255, 255, 0, 0.7);
+            --check: rgba(255, 50, 50, 0.7);
+            --power-active: rgba(100, 200, 255, 0.3);
+            --white-power: #4682b4;
+            --black-power: #8b4513;
+            --medusa-effect: #9b59b6;
+            --phoenix-effect: #e74c3c;
+            --divine-effect: #f1c40f;
+            --lightning-effect: #f39c12;
+            --joe-effect: #1abc9c;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .main-menu {
+            max-width: 600px;
+            background-color: var(--light-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+        
+        .main-menu h1 {
+            color: var(--text);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .menu-options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .menu-button {
+            padding: 15px;
+            background-color: var(--highlight);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .menu-button:hover {
+            background-color: var(--highlight-dark);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+        }
+        
+        .game-container {
+            display: flex;
+            max-width: 1200px;
+            background-color: var(--light-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            display: none;
+            gap: 20px;
+        }
+        
+        .game-board-container {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .game-sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+            gap: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: var(--text);
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(8, 70px);
+            grid-template-rows: repeat(8, 70px);
+            gap: 0;
+            margin: 20px auto;
+            border: 3px solid var(--text-dark);
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        
+        .square {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .square.white {
+            background-color: var(--white-square);
+            color: #333;
+        }
+        
+        .square.black {
+            background-color: var(--black-square);
+            color: #111;
+        }
+        
+        .square.highlight {
+            background-color: var(--highlight);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .square.highlight::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: var(--highlight-dark);
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+        
+        .square.selected {
+            background-color: var(--selected);
+            transform: scale(0.95);
+            z-index: 2;
+        }
+        
+        .square.check {
+            background-color: var(--check);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .piece {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            z-index: 1;
+        }
+        
+        .piece:hover {
+            transform: scale(1.1);
+        }
+        
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background-color: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .player-info {
+            padding: 15px;
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .player-info.active {
+            box-shadow: 0 0 0 2px var(--highlight);
+        }
+        
+        .player-info h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+        
+        .game-status {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            padding: 12px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            border-left: 4px solid var(--highlight);
+        }
+        
+        .power-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .power-button {
+            flex: 1;
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .power-button.white-power {
+            background-color: var(--white-power);
+        }
+
+        .power-button.black-power {
+            background-color: var(--black-power);
+        }
+
+        .power-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .power-button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        button {
+            padding: 12px;
+            background-color: var(--highlight);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        button:hover {
+            background-color: var(--highlight-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .power-status {
+            font-style: italic;
+            color: var(--text-dark);
+            margin-top: 5px;
+        }
+        
+        .power-descriptions {
+            padding: 15px;
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border-left: 4px solid var(--highlight);
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        
+        .power-descriptions h3 {
+            margin-top: 0;
+            color: var(--text);
+        }
+        
+        .power-descriptions ul {
+            padding-left: 20px;
+        }
+        
+        .power-descriptions li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s;
+        }
+        
+        .modal-content {
+            background-color: var(--light-bg);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            animation: scaleIn 0.3s forwards;
+        }
+        
+        .modal h2 {
+            color: var(--text);
+            font-size: 2rem;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .modal button {
+            margin-top: 20px;
+            padding: 12px 25px;
+        }
+        
+        .power-active {
+            position: relative;
+        }
+        
+        .power-active::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--power-active);
+            border-radius: 8px;
+            animation: pulseGlow 2s infinite;
+        }
+        
+        .sound-control {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        .back-to-menu {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            z-index: 1000;
+            color: white;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .power-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .medusa-animation {
+            background: radial-gradient(circle, var(--medusa-effect) 0%, transparent 70%);
+            animation: pulsePower 1s ease-out;
+        }
+        
+        .divine-animation {
+            background: radial-gradient(circle, var(--divine-effect) 0%, transparent 70%);
+            animation: pulsePower 1s ease-out;
+        }
+        
+        .phoenix-animation {
+            background: radial-gradient(circle, var(--phoenix-effect) 0%, transparent 70%);
+            animation: pulsePower 1s ease-out;
+        }
+        
+        .lightning-animation {
+            background: radial-gradient(circle, var(--lightning-effect) 0%, transparent 70%);
+            animation: pulsePower 0.5s ease-out;
+        }
+        
+        .joe-animation {
+            background: radial-gradient(circle, var(--joe-effect) 0%, transparent 70%);
+            animation: pulsePower 1s ease-out;
+        }
+        
+        .frozen-piece {
+            position: relative;
+            opacity: 0.6;
+        }
+        
+        .frozen-piece::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--medusa-effect);
+            opacity: 0.3;
+            border-radius: 50%;
+        }
+        
+        .timers {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        
+        .timer {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .white-timer {
+            background-color: var(--white-square);
+            color: #333;
+        }
+        
+        .black-timer {
+            background-color: var(--black-square);
+            color: #111;
+        }
+        
+        .timer-low {
+            animation: pulseWarning 1s infinite;
+        }
+        
+        .time-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .time-option {
+            padding: 8px 12px;
+            background-color: var(--light-bg);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .time-option:hover {
+            background-color: var(--highlight);
+        }
+        
+        .time-option.selected {
+            background-color: var(--highlight-dark);
+        }
+        
+        .move-history {
+            overflow-y: auto;
+            padding: 10px;
+            background-color: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            flex-grow: 1;
+            min-height: 200px;
+        }
+        
+        .move-entry {
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .move-entry.current {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        .joe-queen {
+            position: relative;
+        }
+        
+        .joe-queen::after {
+            content: '😎';
+            position: absolute;
+            font-size: 20px;
+            bottom: -5px;
+            right: -5px;
+            z-index: 2;
+        }
+
+        /* Power Selection Styles */
+        .power-selection {
+            margin: 20px 0;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .player-power-selection {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .player-power-selection select {
+            padding: 8px;
+            border-radius: 5px;
+            background-color: var(--light-bg);
+            color: var(--text);
+            border: 1px solid var(--highlight);
+            width: 100%;
+        }
+
+        .player-power-selection h4 {
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .player-power-selection option {
+            color: var(--text);
+            background: var(--light-bg);
+        }
+
+        .player-power-selection option[value="random"] {
+            font-weight: bold;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 50, 50, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0); }
+        }
+        
+        @keyframes pulseGlow {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+            100% { opacity: 0.3; }
+        }
+        
+        @keyframes pulsePower {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        
+        @keyframes pulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 50, 50, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0.9); }
+            to { transform: scale(1); }
+        }
+        
+        @keyframes pieceMove {
+            from { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            to { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-menu" id="main-menu">
+        <h1>♞ Superpower Chess ♘</h1>
+        <div class="menu-options">
+            <button class="menu-button" id="play-friend-btn">Play vs Friend</button>
+            <button class="menu-button" id="play-ai-btn">Play vs AI</button>
+            
+            <div class="time-controls" id="time-controls">
+                <div class="time-option selected" data-time="1">1 min</div>
+                <div class="time-option" data-time="3">3 min</div>
+                <div class="time-option" data-time="5">5 min</div>
+                <div class="time-option" data-time="10">10 min</div>
+                <div class="time-option" data-time="0">∞</div>
+            </div>
+            
+            <div class="power-selection">
+                <h3>Select Powers</h3>
+                <div class="player-power-selection">
+                    <div>
+                        <h4>White Power</h4>
+                        <select id="white-power-select">
+                            <option value="random">Random</option>
+                            <!-- Options will be added by JavaScript -->
+                        </select>
+                    </div>
+                    <div>
+                        <h4>Black Power</h4>
+                        <select id="black-power-select">
+                            <option value="random">Random</option>
+                            <!-- Options will be added by JavaScript -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container" id="game-container">
+        <div class="game-board-container">
+            <h1>♞ Superpower Chess ♘</h1>
+            
+            <div class="timers">
+                <div id="white-timer" class="timer white-timer">5:00</div>
+                <div id="black-timer" class="timer black-timer">5:00</div>
+            </div>
+            
+            <div class="game-board" id="chessboard"></div>
+            
+            <div class="game-controls">
+                <div class="player-info" id="white-player-info">
+                    <h3>Player 1 (White)</h3>
+                    <div id="p1-power-display" class="power-status">Power: Loading...</div>
+                    <div id="p1-power-status" class="power-status">Power ready</div>
+                </div>
+                
+                <div class="game-status" id="game-status">
+                    White's turn
+                </div>
+                
+                <div class="player-info" id="black-player-info">
+                    <h3>Player 2 (Black)</h3>
+                    <div id="p2-power-display" class="power-status">Power: Loading...</div>
+                    <div id="p2-power-status" class="power-status">Power ready</div>
+                </div>
+                
+                <button id="new-game-btn">New Game</button>
+            </div>
+        </div>
+        
+        <div class="game-sidebar">
+            <div class="power-buttons">
+                <button id="white-power-btn" class="power-button white-power" disabled>Use White Ability</button>
+                <button id="black-power-btn" class="power-button black-power" disabled>Use Black Abiltiy</button>
+            </div>
+            
+            <div class="move-history" id="move-history">
+                <div class="move-entry current">Game started</div>
+            </div>
+            
+            <div class="power-descriptions">
+                <h3>Power Descriptions</h3>
+                <ul id="power-descriptions-list">
+                    <li><strong>Teleportation:</strong> Swap your king with any friendly piece (except queen)</li>
+                    <li><strong>Phantom Shift:</strong> Knights move through pieces for 3 turns</li>
+                    <li><strong>Double Step:</strong> Pawns move 3 squares on first move (always active)</li>
+                    <li><strong>Vampiric Strike:</strong> Revive a pawn when capturing a piece</li>
+                    <li><strong>Royal Guard:</strong> One pawn becomes uncapturable for 4 turns</li>
+                    <li><strong>Unlikely Alliance:</strong> Bishops and rooks can move through pieces when adjacent (always active)</li>
+                    <li><strong>Superman:</strong> Your king gains knight movement abilities (always active)</li>
+                    <li><strong>Time Freeze:</strong> Opponent skips their next turn</li>
+                    <li><strong>Medusa's Gaze:</strong> Freeze an enemy piece opposite your rook (except kings)</li>
+                    <li><strong>Divine Bishop:</strong> Lone bishop gains queen movement</li>
+                    <li><strong>Phoenix Rebirth:</strong> Sacrifice your turn to revive your most valuable captured piece</li>
+                    <li><strong>Zeus' Wrath:</strong> Strike an enemy piece with lightning, removing it from the board (cannot target kings)</li>
+                    <li><strong>Joe:</strong> Your queen gains the power of joe carlson with knight movement and cool sunglasses</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="game-over-modal">
+        <div class="modal-content">
+            <h2 id="game-over-message">Checkmate! White wins!</h2>
+            <button id="new-game-modal-btn">New Game</button>
+            <button id="back-to-menu-modal-btn">Main Menu</button>
+        </div>
+    </div>
+
+    <div class="sound-control" id="sound-control" title="Toggle Sound">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+    </div>
+    
+    <div class="back-to-menu" id="back-to-menu">← Main Menu</div>
+    
+    <script>
+        // Audio elements
+        const sounds = {
+            move: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-chess-notification-1994.mp3'),
+            capture: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3'),
+            check: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3'),
+            checkmate: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3'),
+            power: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magic-spell-675.mp3'),
+            error: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-game-over-470.mp3'),
+            clock: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-clock-countdown-bleeps-916.mp3')
+        };
+
+        // Sound control
+        let soundEnabled = true;
+        const soundControl = document.getElementById('sound-control');
+        
+        soundControl.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundControl.style.opacity = soundEnabled ? '1' : '0.5';
+            localStorage.setItem('chessSoundEnabled', soundEnabled);
+        });
+
+        // Initialize sound preference
+        if (localStorage.getItem('chessSoundEnabled') !== null) {
+            soundEnabled = localStorage.getItem('chessSoundEnabled') === 'true';
+            soundControl.style.opacity = soundEnabled ? '1' : '0.5';
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            try {
+                sounds[type].pause();
+                sounds[type].currentTime = 0;
+                sounds[type].play();
+            } catch (e) {
+                console.log("Sound error:", e);
+            }
+        }
+
+        // Main menu elements
+        const mainMenu = document.getElementById('main-menu');
+        const gameContainer = document.getElementById('game-container');
+        const playFriendBtn = document.getElementById('play-friend-btn');
+        const playAIBtn = document.getElementById('play-ai-btn');
+        const backToMenuBtn = document.getElementById('back-to-menu');
+        const backToMenuModalBtn = document.getElementById('back-to-menu-modal-btn');
+
+        // Game elements
+        const board = document.getElementById('chessboard');
+        const gameStatus = document.getElementById('game-status');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const whitePowerBtn = document.getElementById('white-power-btn');
+        const blackPowerBtn = document.getElementById('black-power-btn');
+        const p1PowerDisplay = document.getElementById('p1-power-display');
+        const p2PowerDisplay = document.getElementById('p2-power-display');
+        const p1PowerStatus = document.getElementById('p1-power-status');
+        const p2PowerStatus = document.getElementById('p2-power-status');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const gameOverMessage = document.getElementById('game-over-message');
+        const newGameModalBtn = document.getElementById('new-game-modal-btn');
+        const whitePlayerInfo = document.getElementById('white-player-info');
+        const blackPlayerInfo = document.getElementById('black-player-info');
+        const whiteTimer = document.getElementById('white-timer');
+        const blackTimer = document.getElementById('black-timer');
+        const timeControls = document.getElementById('time-controls');
+        const moveHistory = document.getElementById('move-history');
+        
+        const powers = [
+            { 
+                name: "Teleportation", 
+                description: "Swap your king with any friendly piece (except queen)",
+                use: teleportPower,
+                isPassive: false
+            },
+            { 
+                name: "Phantom Shift", 
+                description: "Knights move through pieces for 3 turns",
+                use: phantomShiftPower,
+                isPassive: false
+            },
+            { 
+                name: "Double Step", 
+                description: "Pawns move 3 squares on first move",
+                use: doubleStepPower,
+                isPassive: true
+            },
+            { 
+                name: "Vampiric Strike", 
+                description: "Revive a pawn when capturing a piece",
+                use: vampiricStrikePower,
+                isPassive: false
+            },
+            { 
+                name: "Royal Guard", 
+                description: "One pawn becomes uncapturable for 4 turns",
+                use: royalGuardPower,
+                isPassive: false
+            },
+            { 
+                name: "Unlikely Alliance", 
+                description: "Bishops and rooks can move through pieces when adjacent",
+                use: unlikelyAlliancePower,
+                isPassive: true
+            },
+            { 
+                name: "Superman", 
+                description: "Your king gains knight movement abilities",
+                use: supermanPower,
+                isPassive: true
+            },
+            { 
+                name: "Time Freeze", 
+                description: "Opponent skips their next turn",
+                use: timeFreezePower,
+                isPassive: false
+            },
+            { 
+                name: "Medusa's Gaze", 
+                description: "Freeze an enemy piece opposite your rook (except kings)",
+                use: medusaPower,
+                isPassive: false
+            },
+            { 
+                name: "Divine Bishop", 
+                description: "Lone bishop gains queen movement",
+                use: divineBishopPower,
+                isPassive: true
+            },
+            { 
+                name: "Phoenix Rebirth", 
+                description: "Sacrifice your turn to revive your most valuable captured piece",
+                use: phoenixRebirthPower,
+                isPassive: false
+            },
+            { 
+                name: "Zeus' Wrath", 
+                description: "Strike an enemy piece with lightning, removing it from the board (cannot target kings)",
+                use: zeusWrathPower,
+                isPassive: false
+            },
+            { 
+                name: "Joe", 
+                description: "Your queen gains knight movement and cool sunglasses",
+                use: joePower,
+                isPassive: true
+            }
+        ];
+        
+        // Populate power selection dropdowns (includes all powers)
+        function populatePowerSelects() {
+            const whiteSelect = document.getElementById('white-power-select');
+            const blackSelect = document.getElementById('black-power-select');
+            
+            // Clear existing options (keeping Random)
+            while (whiteSelect.options.length > 1) whiteSelect.remove(1);
+            while (blackSelect.options.length > 1) blackSelect.remove(1);
+            
+            // Add ALL powers
+            powers.forEach(power => {
+                const option1 = document.createElement('option');
+                option1.value = power.name;
+                option1.textContent = power.name + (power.isPassive ? " (Passive)" : "");
+                whiteSelect.appendChild(option1.cloneNode(true));
+                blackSelect.appendChild(option1);
+            });
+        }
+
+        // Helper function for random power selection
+        function getRandomPower() {
+            return powers[Math.floor(Math.random() * powers.length)];
+        }
+
+        // Call this when showing main menu
+        populatePowerSelects();
+        
+        let gameState = {
+            board: [],
+            currentPlayer: 'white',
+            selectedPiece: null,
+            validMoves: [],
+            p1Power: null,
+            p2Power: null,
+            p1PowerUsed: false,
+            p2PowerUsed: false,
+            phantomShiftActive: false,
+            phantomShiftTurns: 0,
+            royalGuardActive: false,
+            royalGuardTurns: 0,
+            royalGuardPawn: null,
+            moveHistory: [],
+            capturedPieces: { white: [], black: [] },
+            enPassantTarget: null,
+            check: false,
+            gameOver: false,
+            supermanActive: null,
+            timeFreezeActive: null,
+            timeFreezeUsed: false,
+            gameMode: 'friend',
+            teleporting: false,
+            teleportKingPos: null,
+            frozenPieces: [],
+            usingMedusa: false,
+            medusaRook: null,
+            usingPhoenix: false,
+            timeControls: {
+                whiteTime: 300,
+                blackTime: 300,
+                timerInterval: null,
+                lastUpdate: 0,
+                timeLimit: 300,
+                active: false
+            },
+            viewingHistory: false,
+            historyIndex: 0,
+            joeActive: null
+        };
+        
+        // Menu event listeners
+        playFriendBtn.addEventListener('click', () => {
+            gameState.gameMode = 'friend';
+            startGame();
+        });
+        
+        playAIBtn.addEventListener('click', () => {
+            gameState.gameMode = 'ai';
+            startGame();
+        });
+        
+        backToMenuBtn.addEventListener('click', showMainMenu);
+        backToMenuModalBtn.addEventListener('click', showMainMenu);
+        
+        function showMainMenu() {
+            gameContainer.style.display = 'none';
+            mainMenu.style.display = 'block';
+            backToMenuBtn.style.display = 'none';
+            gameOverModal.style.display = 'none';
+            clearInterval(gameState.timeControls.timerInterval);
+            
+            // Reset dropdowns to "random"
+            document.getElementById('white-power-select').value = 'random';
+            document.getElementById('black-power-select').value = 'random';
+        }
+        
+        function startGame() {
+            // Get selected time control
+            const selectedTime = document.querySelector('.time-option.selected').dataset.time;
+            gameState.timeControls.timeLimit = parseInt(selectedTime) * 60;
+            
+            // Get selected powers
+            const whitePowerSelect = document.getElementById('white-power-select');
+            const blackPowerSelect = document.getElementById('black-power-select');
+            
+            // Assign selected powers (or random if selected)
+            gameState.p1Power = whitePowerSelect.value === "random" 
+                ? getRandomPower()
+                : powers.find(p => p.name === whitePowerSelect.value);
+            
+            gameState.p2Power = blackPowerSelect.value === "random" 
+                ? getRandomPower()
+                : powers.find(p => p.name === blackPowerSelect.value);
+
+            // Proceed to game
+            mainMenu.style.display = 'none';
+            gameContainer.style.display = 'flex';
+            backToMenuBtn.style.display = 'block';
+            initializeGame();
+        }
+        
+        // Initialize the game
+        newGameBtn.addEventListener('click', initializeGame);
+        whitePowerBtn.addEventListener('click', () => usePower('white'));
+        blackPowerBtn.addEventListener('click', () => usePower('black'));
+        newGameModalBtn.addEventListener('click', () => {
+            gameOverModal.style.display = 'none';
+            initializeGame();
+        });
+        
+        // Time control setup
+        document.querySelectorAll('.time-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+        
+        // Keyboard navigation for move history
+        document.addEventListener('keydown', (e) => {
+            if (gameState.gameOver) return;
+            
+            // Left arrow - view previous move
+            if (e.key === 'ArrowLeft' && !gameState.viewingHistory) {
+                viewHistory(-1);
+            }
+            // Right arrow - return to current position
+            else if (e.key === 'ArrowRight' && gameState.viewingHistory) {
+                viewHistory(1);
+            }
+        });
+        
+        function showGameOver(message) {
+            gameOverMessage.textContent = message;
+            gameOverModal.style.display = 'flex';
+            clearInterval(gameState.timeControls.timerInterval);
+        }
+        
+        function initializeGame() {
+            // Initialize board and game state
+            gameState.board = createInitialBoard();
+            gameState.currentPlayer = 'white';
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            gameState.p1PowerUsed = false;
+            gameState.p2PowerUsed = false;
+            gameState.moveHistory = [];
+            gameState.capturedPieces = { white: [], black: [] };
+            gameState.gameOver = false;
+            
+            // Display selected powers
+            p1PowerDisplay.textContent = `Power: ${gameState.p1Power.name}`;
+            p2PowerDisplay.textContent = `Power: ${gameState.p2Power.name}`;
+            
+            // Apply passive powers
+            if (gameState.p1Power.isPassive) gameState.p1Power.use('white');
+            if (gameState.p2Power.isPassive) gameState.p2Power.use('black');
+            
+            // Initialize timers
+            initTimers();
+            updateBoardDisplay();
+            updateGameStatus();
+            updateHistoryDisplay();
+            
+            // AI move if needed
+            if (gameState.gameMode === 'ai' && gameState.currentPlayer === 'black') {
+                setTimeout(makeAIMove, 500);
+            }
+        }
+        
+        function createInitialBoard() {
+            // Create an 8x8 board
+            const board = Array(8).fill().map(() => Array(8).fill(null));
+            
+            // Set up pawns
+            for (let i = 0; i < 8; i++) {
+                board[1][i] = { type: 'pawn', color: 'black', hasMoved: false };
+                board[6][i] = { type: 'pawn', color: 'white', hasMoved: false };
+            }
+            
+            // Set up other pieces
+            const pieceOrder = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
+            for (let i = 0; i < 8; i++) {
+                board[0][i] = { type: pieceOrder[i], color: 'black', hasMoved: false };
+                board[7][i] = { type: pieceOrder[i], color: 'white', hasMoved: false };
+            }
+            
+            return board;
+        }
+    
+        function updateBoardDisplay() {
+            board.innerHTML = '';
+            
+            // Update active player highlight
+            whitePlayerInfo.classList.toggle('active', gameState.currentPlayer === 'white');
+            blackPlayerInfo.classList.toggle('active', gameState.currentPlayer === 'black');
+            
+            // Clear check highlights first
+            const kingPos = findKing(gameState.currentPlayer);
+            const inCheck = kingPos && isInCheck(gameState.currentPlayer);
+            
+            if (inCheck && !gameState.check) {
+                playSound('check');
+            }
+            gameState.check = inCheck;
+            
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(row + col) % 2 === 0 ? 'white' : 'black'}`;
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    
+                    const piece = gameState.board[row][col];
+                    
+                    // Highlight king in check
+                    if (piece && piece.type === 'king' && inCheck && piece.color === gameState.currentPlayer) {
+                        square.classList.add('check');
+                    }
+                    
+                    if (gameState.selectedPiece && gameState.selectedPiece.row === row && gameState.selectedPiece.col === col) {
+                        square.classList.add('selected');
+                    }
+                    
+                    if (gameState.validMoves.some(move => move.row === row && move.col === col)) {
+                        square.classList.add('highlight');
+                    }
+                    
+                    if (piece) {
+                        const pieceElement = document.createElement('div');
+                        pieceElement.className = 'piece';
+                        
+                        // Add Joe effect if active
+                        if (piece.type === 'queen' && 
+                            ((piece.color === 'white' && gameState.p1Power.name === "Joe") || 
+                             (piece.color === 'black' && gameState.p2Power.name === "Joe"))) {
+                            pieceElement.classList.add('joe-queen');
+                        }
+                        
+                        pieceElement.textContent = getPieceSymbol(piece);
+                        square.appendChild(pieceElement);
+                        
+                        // Highlight royal guard pawn
+                        if (gameState.royalGuardActive && gameState.royalGuardPawn && 
+                            gameState.royalGuardPawn.row === row && gameState.royalGuardPawn.col === col) {
+                            square.style.border = '2px solid gold';
+                        }
+                    }
+                    
+                    // Mark frozen pieces
+                    if (gameState.frozenPieces.some(p => p.row === row && p.col === col)) {
+                        const piece = square.querySelector('.piece');
+                        if (piece) {
+                            piece.classList.add('frozen-piece');
+                        }
+                    }
+                    
+                    square.addEventListener('click', () => handleSquareClick(row, col));
+                    board.appendChild(square);
+                }
+            }
+        }
+        
+        function getPieceSymbol(piece) {
+            const symbols = {
+                king: { white: '♔', black: '♚' },
+                queen: { white: '♕', black: '♛' },
+                rook: { white: '♖', black: '♜' },
+                bishop: { white: '♗', black: '♝' },
+                knight: { white: '♘', black: '♞' },
+                pawn: { white: '♙', black: '♟' }
+            };
+            return symbols[piece.type][piece.color];
+        }
+        
+        function handleSquareClick(row, col) {
+            if (gameState.gameOver) return;
+            
+            // If in teleport mode, handle teleport selection
+            if (gameState.teleporting) {
+                handleTeleportSelection(row, col);
+                return;
+            }
+            
+            // Medusa power selection
+            if (gameState.usingMedusa) {
+                const piece = gameState.board[row][col];
+                if (piece && piece.type === 'rook' && piece.color === gameState.currentPlayer) {
+                    // Find piece directly across
+                    const enemyRow = piece.color === 'white' ? 7 - row : 7 - row;
+                    const enemyCol = col;
+                    const enemyPiece = gameState.board[enemyRow][enemyCol];
+                    
+                    if (enemyPiece && enemyPiece.color !== piece.color && enemyPiece.type !== 'king') {
+                        // Freeze the piece
+                        if (!gameState.frozenPieces.some(p => p.row === enemyRow && p.col === enemyCol)) {
+                            gameState.frozenPieces.push({ row: enemyRow, col: enemyCol });
+                            
+                            // Add animation
+                            const square = document.querySelector(`.square[data-row="${enemyRow}"][data-col="${enemyCol}"]`);
+                            if (square) {
+                                const anim = document.createElement('div');
+                                anim.className = 'power-animation medusa-animation';
+                                square.appendChild(anim);
+                                setTimeout(() => anim.remove(), 1000);
+                            }
+                            
+                            playSound('power');
+                            
+                            // Record the move
+                            gameState.moveHistory.push({
+                                special: `Medusa's Gaze froze ${enemyPiece.type} at ${String.fromCharCode(97 + enemyCol)}${8 - enemyRow}`
+                            });
+                            updateHistoryDisplay();
+                        }
+                    } else {
+                        playSound('error');
+                        alert("No valid enemy piece to freeze opposite this rook!");
+                        return;
+                    }
+                    
+                    gameState.usingMedusa = false;
+                    gameState.medusaRook = null;
+                    
+                    // End turn
+                    gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                    updateBoardDisplay();
+                    updateGameStatus();
+                    
+                    // AI move if needed
+                    if (gameState.gameMode === 'ai' && gameState.currentPlayer === 'black') {
+                        setTimeout(makeAIMove, 500);
+                    }
+                    return;
+                } else {
+                    playSound('error');
+                    alert("Please select one of your rooks");
+                    return;
+                }
+            }
+            
+            const piece = gameState.board[row][col];
+            
+            // If no piece is selected and the clicked square has a piece of the current player's color
+            if (!gameState.selectedPiece && piece && piece.color === gameState.currentPlayer) {
+                gameState.selectedPiece = { row, col, piece };
+                gameState.validMoves = getValidMoves(row, col);
+                updateBoardDisplay();
+                return;
+            }
+            
+            // If a piece is already selected
+            if (gameState.selectedPiece) {
+                // If clicking on another piece of the same color, select that piece instead
+                if (piece && piece.color === gameState.currentPlayer) {
+                    gameState.selectedPiece = { row, col, piece };
+                    gameState.validMoves = getValidMoves(row, col);
+                    updateBoardDisplay();
+                    return;
+                }
+                
+                // Check if the move is valid
+                const move = gameState.validMoves.find(m => m.row === row && m.col === col);
+                
+                if (move) {
+                    makeMove(gameState.selectedPiece.row, gameState.selectedPiece.col, row, col, move.isEnPassant);
+                    
+                    // If playing against AI and it's black's turn, make AI move
+                    if (gameState.gameMode === 'ai' && gameState.currentPlayer === 'black' && !gameState.gameOver) {
+                        setTimeout(makeAIMove, 500);
+                    }
+                } else {
+                    // Invalid move, deselect
+                    playSound('error');
+                    gameState.selectedPiece = null;
+                    gameState.validMoves = [];
+                    updateBoardDisplay();
+                }
+            }
+        }
+        
+        function handleTeleportSelection(row, col) {
+            const piece = gameState.board[row][col];
+            
+            // If selecting a friendly piece (except queen) to swap with king
+            if (piece && piece.color === gameState.currentPlayer && piece.type !== 'queen' && piece.type !== 'king') {
+                // Perform the swap
+                const king = gameState.board[gameState.teleportKingPos.row][gameState.teleportKingPos.col];
+                const otherPiece = gameState.board[row][col];
+                
+                gameState.board[gameState.teleportKingPos.row][gameState.teleportKingPos.col] = otherPiece;
+                gameState.board[row][col] = king;
+                
+                gameState.teleporting = false;
+                gameState.teleportKingPos = null;
+                
+                // Record the move
+                gameState.moveHistory.push({
+                    special: `Teleported king with ${otherPiece.type} at ${String.fromCharCode(97 + col)}${8 - row}`
+                });
+                updateHistoryDisplay();
+                
+                // End the turn
+                gameState.selectedPiece = null;
+                gameState.validMoves = [];
+                gameState.currentPlayer = gameState.currentPlayer === 'white' ? 'black' : 'white';
+                
+                updateBoardDisplay();
+                updateGameStatus();
+                
+                // If playing against AI and it's black's turn, make AI move
+                if (gameState.gameMode === 'ai' && gameState.currentPlayer === 'black') {
+                    setTimeout(makeAIMove, 500);
+                }
+            } else {
+                playSound('error');
+                alert("Please select a friendly piece (except queen) to swap with your king.");
+            }
+        }
+        
+        function getValidMoves(row, col) {
+            const piece = gameState.board[row][col];
+            if (!piece) return [];
+            
+            // Check if piece is frozen
+            if (gameState.frozenPieces.some(p => p.row === row && p.col === col)) {
+                return [];
+            }
+            
+            const moves = [];
+            const directions = {
+                pawn: { white: -1, black: 1 },
+                knight: [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]],
+                king: [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
+                rook: [[-1,0],[1,0],[0,-1],[0,1]],
+                bishop: [[-1,-1],[-1,1],[1,-1],[1,1]],
+                queen: [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]]
+            };
+            
+            // Add knight moves to king if Superman power is active
+            if (piece.type === 'king' && gameState.supermanActive === piece.color) {
+                directions.king.push(...directions.knight);
+            }
+            
+            // Add knight moves to queen if Joe power is active
+            if (piece.type === 'queen' && 
+                ((piece.color === 'white' && gameState.p1Power.name === "Joe") || 
+                 (piece.color === 'black' && gameState.p2Power.name === "Joe"))) {
+                directions.queen.push(...directions.knight);
+            }
+            
+            // Divine Bishop check
+            if (piece.type === 'bishop' && 
+                ((piece.color === 'white' && gameState.p1Power.name === "Divine Bishop") || 
+                 (piece.color === 'black' && gameState.p2Power.name === "Divine Bishop"))) {
+                // Check if this is the only bishop
+                let bishopCount = 0;
+                for (let r = 0; r < 8; r++) {
+                    for (let c = 0; c < 8; c++) {
+                        const p = gameState.board[r][c];
+                        if (p && p.type === 'bishop' && p.color === piece.color) {
+                            bishopCount++;
+                        }
+                    }
+                }
+                
+                if (bishopCount === 1) {
+                    // Use queen movement
+                    for (const [dr, dc] of directions.queen) {
+                        let newRow = row + dr;
+                        let newCol = col + dc;
+                        
+                        while (isInBounds(newRow, newCol)) {
+                            const target = gameState.board[newRow][newCol];
+                            
+                            if (!target) {
+                                moves.push({ row: newRow, col: newCol });
+                            } else {
+                                if (target.color !== piece.color) {
+                                    // Check if not royal guard pawn
+                                    if (!(gameState.royalGuardActive && 
+                                          gameState.royalGuardPawn.row === newRow && 
+                                          gameState.royalGuardPawn.col === newCol)) {
+                                        moves.push({ row: newRow, col: newCol, isCapture: true });
+                                    }
+                                }
+                                break;
+                            }
+                            
+                            newRow += dr;
+                            newCol += dc;
+                        }
+                    }
+                    
+                    // Filter moves that would leave king in check
+                    return moves.filter(move => {
+                        const tempBoard = JSON.parse(JSON.stringify(gameState.board));
+                        tempBoard[move.row][move.col] = piece;
+                        tempBoard[row][col] = null;
+                        
+                        const kingPos = findKing(piece.color, tempBoard);
+                        if (!kingPos) return true;
+                        
+                        return !isSquareUnderAttack(
+                            kingPos.row, 
+                            kingPos.col, 
+                            piece.color === 'white' ? 'black' : 'white',
+                            tempBoard
+                        );
+                    });
+                }
+            }
+            
+            switch (piece.type) {
+                case 'pawn':
+                    const dir = directions.pawn[piece.color];
+                    // Forward move
+                    if (isInBounds(row + dir, col) && !gameState.board[row + dir][col]) {
+                        moves.push({ row: row + dir, col });
+                        
+                        // Double move from starting position
+                        const startRow = piece.color === 'white' ? 6 : 1;
+                        if (row === startRow && !piece.hasMoved && !gameState.board[row + 2 * dir][col]) {
+                            moves.push({ row: row + 2 * dir, col, isDoublePawnMove: true });
+                        }
+                        
+                        // Triple move if Double Step power is active
+                        if ((gameState.p1Power.name === "Double Step" && piece.color === 'white') || 
+                            (gameState.p2Power.name === "Double Step" && piece.color === 'black')) {
+                            if (row === startRow && !piece.hasMoved && !gameState.board[row + 3 * dir][col]) {
+                                moves.push({ row: row + 3 * dir, col, isDoublePawnMove: true });
+                            }
+                        }
+                    }
+                    
+                    // Capture moves
+                    for (const captureCol of [col - 1, col + 1]) {
+                        if (isInBounds(row + dir, captureCol)) {
+                            const target = gameState.board[row + dir][captureCol];
+                            if (target && target.color !== piece.color) {
+                                // Check if not royal guard pawn
+                                if (!(gameState.royalGuardActive && 
+                                      gameState.royalGuardPawn.row === row + dir && 
+                                      gameState.royalGuardPawn.col === captureCol)) {
+                                    moves.push({ row: row + dir, col: captureCol, isCapture: true });
+                                }
+                            }
+                            // En passant
+                            else if (gameState.enPassantTarget && 
+                                     gameState.enPassantTarget.row === row && 
+                                     gameState.enPassantTarget.col === captureCol) {
+                                moves.push({ 
+                                    row: row + dir, 
+                                    col: captureCol, 
+                                    isEnPassant: true,
+                                    capturedPawnRow: row,
+                                    capturedPawnCol: captureCol
+                                });
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'knight':
+                    for (const [dr, dc] of directions.knight) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+                        if (isInBounds(newRow, newCol)) {
+                            const target = gameState.board[newRow][newCol];
+                            if (!target || target.color !== piece.color) {
+                                // Phantom Shift allows moving through pieces
+                                if (gameState.phantomShiftActive && piece.color === gameState.currentPlayer) {
+                                    moves.push({ row: newRow, col: newCol, isCapture: !!target });
+                                } else {
+                                    // Normal knight move - can jump over pieces
+                                    moves.push({ row: newRow, col: newCol, isCapture: !!target });
+                                }
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'king':
+                    for (const [dr, dc] of directions.king) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+                        if (isInBounds(newRow, newCol)) {
+                            const target = gameState.board[newRow][newCol];
+                            if (!target || target.color !== piece.color) {
+                                // Don't allow moving into check
+                                if (!isSquareUnderAttack(newRow, newCol, piece.color === 'white' ? 'black' : 'white')) {
+                                    moves.push({ row: newRow, col: newCol, isCapture: !!target });
+                                }
+                            }
+                        }
+                    }
+                    break;
+                    
+                case 'rook':
+                case 'bishop':
+                    // Unlikely Alliance - can move through pieces if adjacent to the other type
+                    if ((gameState.p1Power.name === "Unlikely Alliance" && piece.color === 'white') || 
+                        (gameState.p2Power.name === "Unlikely Alliance" && piece.color === 'black')) {
+                        const otherType = piece.type === 'rook' ? 'bishop' : 'rook';
+                        const hasAlliance = checkAdjacentAllies(row, col, otherType, piece.color);
+                        
+                        if (hasAlliance) {
+                            // Can move through pieces
+                            const moveDirections = piece.type === 'rook' ? directions.rook : directions.bishop;
+                            
+                            for (const [dr, dc] of moveDirections) {
+                                let newRow = row + dr;
+                                let newCol = col + dc;
+                                
+                                while (isInBounds(newRow, newCol)) {
+                                    const target = gameState.board[newRow][newCol];
+                                    
+                                    if (!target || target.color !== piece.color) {
+                                        moves.push({ row: newRow, col: newCol, isCapture: !!target });
+                                    }
+                                    
+                                    newRow += dr;
+                                    newCol += dc;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    // Fall through to normal movement if no alliance
+                    
+                case 'queen':
+                    const moveDirections = piece.type === 'rook' ? directions.rook : 
+                                         piece.type === 'bishop' ? directions.bishop : 
+                                         directions.queen;
+                    
+                    for (const [dr, dc] of moveDirections) {
+                        let newRow = row + dr;
+                        let newCol = col + dc;
+                        
+                        while (isInBounds(newRow, newCol)) {
+                            const target = gameState.board[newRow][newCol];
+                            
+                            if (!target) {
+                                moves.push({ row: newRow, col: newCol });
+                            } else {
+                                if (target.color !== piece.color) {
+                                    // Check if not royal guard pawn
+                                    if (!(gameState.royalGuardActive && 
+                                          gameState.royalGuardPawn.row === newRow && 
+                                          gameState.royalGuardPawn.col === newCol)) {
+                                        moves.push({ row: newRow, col: newCol, isCapture: true });
+                                    }
+                                }
+                                break; // Stop in this direction after hitting any piece
+                            }
+                            
+                            newRow += dr;
+                            newCol += dc;
+                        }
+                    }
+                    break;
+            }
+            
+            // Filter out moves that would leave king in check
+            return moves.filter(move => {
+                // Simulate the move
+                const originalBoard = JSON.parse(JSON.stringify(gameState.board));
+                
+                // Make the move on a copy of the board
+                const tempBoard = JSON.parse(JSON.stringify(gameState.board));
+                const movingPiece = tempBoard[row][col];
+                
+                if (move.isEnPassant) {
+                    tempBoard[move.capturedPawnRow][move.capturedPawnCol] = null;
+                }
+                
+                tempBoard[move.row][move.col] = movingPiece;
+                tempBoard[row][col] = null;
+                
+                // Check if king would be in check after this move
+                const kingPos = findKing(piece.color, tempBoard);
+                if (!kingPos) return true; // Shouldn't happen
+                
+                const wouldBeInCheck = isSquareUnderAttack(
+                    kingPos.row, 
+                    kingPos.col, 
+                    piece.color === 'white' ? 'black' : 'white',
+                    tempBoard
+                );
+                
+                return !wouldBeInCheck;
+            });
+        }
+        
+        function checkAdjacentAllies(row, col, allyType, color) {
+            const directions = [[-1,0],[1,0],[0,-1],[0,1],[-1,-1],[-1,1],[1,-1],[1,1]];
+            
+            for (const [dr, dc] of directions) {
+                const newRow = row + dr;
+                const newCol = col + dc;
+                
+                if (isInBounds(newRow, newCol)) {
+                    const piece = gameState.board[newRow][newCol];
+                    if (piece && piece.type === allyType && piece.color === color) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        
+        function isInBounds(row, col) {
+            return row >= 0 && row < 8 && col >= 0 && col < 8;
+        }
+        
+        function makeMove(fromRow, fromCol, toRow, toCol, isEnPassant = false) {
+            // Check if trying to move a frozen piece
+            if (gameState.frozenPieces.some(p => p.row === fromRow && p.col === fromCol)) {
+                playSound('error');
+                alert("This piece is frozen by Medusa's Gaze and cannot move!");
+                return;
+            }
+            
+            const piece = gameState.board[fromRow][fromCol];
+            let target = gameState.board[toRow][toCol];
+            
+            // Play move sound
+            if (target) {
+                playSound('capture');
+            } else {
+                playSound('move');
+            }
+
+            // Handle en passant capture
+            if (isEnPassant) {
+                target = gameState.board[fromRow][toCol]; // The pawn being captured
+                gameState.board[fromRow][toCol] = null; // Remove the captured pawn
+            }
+            
+            // Record the move
+            const moveRecord = {
+                from: { row: fromRow, col: fromCol },
+                to: { row: toRow, col: toCol },
+                piece: JSON.parse(JSON.stringify(piece)),
+                captured: target ? JSON.parse(JSON.stringify(target)) : null,
+                isEnPassant: isEnPassant
+            };
+            
+            gameState.moveHistory.push(moveRecord);
+            updateHistoryDisplay();
+            
+            // Handle capture
+            if (target) {
+                gameState.capturedPieces[target.color].push(target);
+                
+                // Vampiric Strike power - revive a pawn when capturing
+                if ((gameState.currentPlayer === 'white' && gameState.p1Power.name === "Vampiric Strike") ||
+                    (gameState.currentPlayer === 'black' && gameState.p2Power.name === "Vampiric Strike")) {
+                    const capturedPawns = gameState.capturedPieces[gameState.currentPlayer].filter(p => p.type === 'pawn');
+                    if (capturedPawns.length > 0) {
+                        const pawnToRevive = capturedPawns[0];
+                        const backRow = gameState.currentPlayer === 'white' ? 6 : 1;
+                        
+                        // Find an empty spot in the back row
+                        for (let col = 0; col < 8; col++) {
+                            if (!gameState.board[backRow][col]) {
+                                gameState.board[backRow][col] = { ...pawnToRevive, hasMoved: false };
+                                gameState.capturedPieces[gameState.currentPlayer] = 
+                                    gameState.capturedPieces[gameState.currentPlayer].filter(p => p !== pawnToRevive);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Move the piece
+            gameState.board[toRow][toCol] = piece;
+            gameState.board[fromRow][fromCol] = null;
+            piece.hasMoved = true;
+            
+            // Set en passant target if pawn moved two squares
+            if (piece.type === 'pawn' && Math.abs(toRow - fromRow) === 2) {
+                gameState.enPassantTarget = { row: toRow, col: toCol };
+            } else {
+                gameState.enPassantTarget = null;
+            }
+            
+            // Check for pawn promotion
+            if (piece.type === 'pawn' && (toRow === 0 || toRow === 7)) {
+                gameState.board[toRow][toCol] = { type: 'queen', color: piece.color, hasMoved: true };
+            }
+            
+            // Update game state
+            gameState.selectedPiece = null;
+            gameState.validMoves = [];
+            
+            // Check for checkmate or stalemate before switching turns
+            const opponent = gameState.currentPlayer === 'white' ? 'black' : 'white';
+            if (isCheckmate(opponent)) {
+                gameState.gameOver = true;
+                playSound('checkmate');
+                showGameOver(`Checkmate! ${gameState.currentPlayer === 'white' ? 'White' : 'Black'} wins!`);
+                updateBoardDisplay();
+                return;
+            } else if (isStalemate(opponent)) {
+                gameState.gameOver = true;
+                playSound('checkmate');
+                showGameOver("Stalemate! Game ends in a draw.");
+                updateBoardDisplay();
+                return;
+            }
+            
+            // Handle Time Freeze power
+            if (gameState.timeFreezeActive) {
+                gameState.currentPlayer = gameState.timeFreezeActive; // Same player goes again
+                gameState.timeFreezeActive = null;
+                gameStatus.textContent = `${gameState.currentPlayer === 'white' ? 'White' : 'Black'} takes another turn (Time Freeze)!`;
+            } else {
+                // Switch turns normally
+                gameState.currentPlayer = opponent;
+            }
+            
+            // Check if the new player is in check
+            const newPlayerKingPos = findKing(gameState.currentPlayer);
+            if (newPlayerKingPos && isInCheck(gameState.currentPlayer)) {
+                gameStatus.textContent = `${gameState.currentPlayer === 'white' ? 'White' : 'Black'} is in check!`;
+            }
+            
+            // Update phantom shift turns
+            if (gameState.phantomShiftActive) {
+                gameState.phantomShiftTurns++;
+                if (gameState.phantomShiftTurns >= 3) {
+                    gameState.phantomShiftActive = false;
+                    gameState.phantomShiftTurns = 0;
+                }
+            }
+            
+            // Update royal guard turns
+            if (gameState.royalGuardActive) {
+                gameState.royalGuardTurns++;
+                if (gameState.royalGuardTurns >= 4) {
+                    gameState.royalGuardActive = false;
+                    gameState.royalGuardTurns = 0;
+                    gameState.royalGuardPawn = null;
+                }
+            }
+            
+            updateBoardDisplay();
+            updateGameStatus();
+        }
+        
+        function findKing(color, customBoard = null) {
+            const boardToUse = customBoard || gameState.board;
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = boardToUse[row][col];
+                    if (piece && piece.type === 'king' && piece.color === color) {
+                        return { row, col };
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function isInCheck(color) {
+            const kingPos = findKing(color);
+            if (!kingPos) return false;
+            
+            return isSquareUnderAttack(kingPos.row, kingPos.col, color === 'white' ? 'black' : 'white');
+        }
+        
+        function isSquareUnderAttack(row, col, byColor, customBoard = null) {
+            const boardToUse = customBoard || gameState.board;
+            
+            // Check for pawn attacks
+            const pawnDir = byColor === 'white' ? -1 : 1;
+            for (const dc of [-1, 1]) {
+                const attackRow = row + pawnDir;
+                const attackCol = col + dc;
+                if (isInBounds(attackRow, attackCol)) {
+                    const piece = boardToUse[attackRow][attackCol];
+                    if (piece && piece.type === 'pawn' && piece.color === byColor) {
+                        return true;
+                    }
+                }
+            }
+            
+            // Check for knight attacks
+            const knightMoves = [[-2,-1],[-2,1],[-1,-2],[-1,2],[1,-2],[1,2],[2,-1],[2,1]];
+            for (const [dr, dc] of knightMoves) {
+                const attackRow = row + dr;
+                const attackCol = col + dc;
+                if (isInBounds(attackRow, attackCol)) {
+                    const piece = boardToUse[attackRow][attackCol];
+                    if (piece && piece.type === 'knight' && piece.color === byColor) {
+                        return true;
+                    }
+                }
+            }
+            
+            // Check for king attacks (for check detection)
+            const kingMoves = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+            if ((gameState.p1Power.name === "Superman" && byColor === 'white') || 
+                (gameState.p2Power.name === "Superman" && byColor === 'black')) {
+                kingMoves.push(...knightMoves);
+            }
+            
+            for (const [dr, dc] of kingMoves) {
+                const attackRow = row + dr;
+                const attackCol = col + dc;
+                if (isInBounds(attackRow, attackCol)) {
+                    const piece = boardToUse[attackRow][attackCol];
+                    if (piece && piece.type === 'king' && piece.color === byColor) {
+                        return true;
+                    }
+                }
+            }
+            
+            // Check for rook/queen attacks (straight lines)
+            const rookDirections = [[-1,0],[1,0],[0,-1],[0,1]];
+            for (const [dr, dc] of rookDirections) {
+                let attackRow = row + dr;
+                let attackCol = col + dc;
+                while (isInBounds(attackRow, attackCol)) {
+                    const piece = boardToUse[attackRow][attackCol];
+                    if (piece) {
+                        if (piece.color === byColor && 
+                            (piece.type === 'rook' || piece.type === 'queen')) {
+                            return true;
+                        }
+                        break;
+                    }
+                    attackRow += dr;
+                    attackCol += dc;
+                }
+            }
+            
+            // Check for bishop/queen attacks (diagonals)
+            const bishopDirections = [[-1,-1],[-1,1],[1,-1],[1,1]];
+            for (const [dr, dc] of bishopDirections) {
+                let attackRow = row + dr;
+                let attackCol = col + dc;
+                while (isInBounds(attackRow, attackCol)) {
+                    const piece = boardToUse[attackRow][attackCol];
+                    if (piece) {
+                        if (piece.color === byColor && 
+                            (piece.type === 'bishop' || piece.type === 'queen')) {
+                            return true;
+                        }
+                        break;
+                    }
+                    attackRow += dr;
+                    attackCol += dc;
+                }
+            }
+            
+            return false;
+        }
+        
+        function isCheckmate(color) {
+            const kingPos = findKing(color);
+            if (!kingPos) return false;
+            
+            // First verify the king is in check
+            if (!isInCheck(color)) return false;
+            
+            // Check if king has any legal moves
+            const kingMoves = getValidMoves(kingPos.row, kingPos.col);
+            if (kingMoves.length > 0) return false;
+            
+            // Check if any other piece can block or capture the attacker
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.color === color && piece.type !== 'king') {
+                        const moves = getValidMoves(row, col);
+                        if (moves.length > 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        function isStalemate(color) {
+            if (isInCheck(color)) return false;
+            
+            // Check if any legal move exists
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.color === color) {
+                        const moves = getValidMoves(row, col);
+                        if (moves.length > 0) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            return true;
+        }
+        
+        function updateGameStatus() {
+            if (gameState.gameOver) return;
+            
+            gameStatus.textContent = `${gameState.currentPlayer === 'white' ? 'White' : 'Black'}'s turn`;
+            
+            // Update power buttons
+            whitePowerBtn.disabled = gameState.currentPlayer !== 'white' || gameState.p1PowerUsed || gameState.p1Power.isPassive;
+            blackPowerBtn.disabled = gameState.currentPlayer !== 'black' || gameState.p2PowerUsed || gameState.p2Power.isPassive;
+            
+            // Pause timers when viewing history
+            if (gameState.viewingHistory) {
+                clearInterval(gameState.timeControls.timerInterval);
+            } else if (gameState.timeControls.active && !gameState.timeControls.timerInterval) {
+                gameState.timeControls.lastUpdate = Date.now();
+                gameState.timeControls.timerInterval = setInterval(updateTimers, 1000);
+            }
+        }
+        
+        function usePower(color) {
+            const power = color === 'white' ? gameState.p1Power : gameState.p2Power;
+            
+            if (power.use(color)) {
+                playSound('power');
+                if (color === 'white') {
+                    gameState.p1PowerUsed = true;
+                    p1PowerStatus.textContent = "Power used";
+                } else {
+                    gameState.p2PowerUsed = true;
+                    p2PowerStatus.textContent = "Power used";
+                }
+                updateGameStatus();
+                updateBoardDisplay();
+            } else {
+                playSound('error');
+            }
+        }
+        
+        // POWER IMPLEMENTATIONS
+        
+        function teleportPower(color) {
+            const kingPos = findKing(color);
+            if (!kingPos) {
+                alert("No king found!");
+                return false;
+            }
+            
+            gameState.teleporting = true;
+            gameState.teleportKingPos = kingPos;
+            alert("Select a friendly piece (except queen) to swap with your king");
+            return true;
+        }
+        
+        function phantomShiftPower(color) {
+            gameState.phantomShiftActive = true;
+            gameState.phantomShiftTurns = 0;
+            if (color === 'white') {
+                p1PowerStatus.classList.add('power-active');
+            } else {
+                p2PowerStatus.classList.add('power-active');
+            }
+            alert("Your knights can now move through pieces for 3 turns!");
+            return true;
+        }
+        
+        function doubleStepPower(color) {
+            // Applied at game start
+            return true;
+        }
+        
+        function vampiricStrikePower(color) {
+            // Handled in the capture logic
+            alert("When you capture a piece, one of your captured pawns will be revived!");
+            return true;
+        }
+        
+        function royalGuardPower(color) {
+            const pawnRow = color === 'white' ? 6 : 1;
+            let pawns = [];
+            
+            // Find all pawns of current player
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.color === color && piece.type === 'pawn') {
+                        pawns.push({ row, col });
+                    }
+                }
+            }
+            
+            if (pawns.length === 0) {
+                alert("You have no pawns to protect!");
+                return false;
+            }
+            
+            // Select a random pawn
+            const selectedPawn = pawns[Math.floor(Math.random() * pawns.length)];
+            gameState.royalGuardActive = true;
+            gameState.royalGuardTurns = 0;
+            gameState.royalGuardPawn = { ...selectedPawn };
+            
+            if (color === 'white') {
+                p1PowerStatus.classList.add('power-active');
+            } else {
+                p2PowerStatus.classList.add('power-active');
+            }
+            
+            alert(`Your pawn at ${String.fromCharCode(97 + selectedPawn.col)}${8 - selectedPawn.row} is now protected for 4 turns!`);
+            updateBoardDisplay();
+            return true;
+        }
+        
+        function unlikelyAlliancePower(color) {
+            // Always active
+            return true;
+        }
+        
+        function supermanPower(color) {
+            gameState.supermanActive = color;
+            return true;
+        }
+        
+        function timeFreezePower(color) {
+            if (gameState.timeFreezeUsed) {
+                alert("Time Freeze can only be used once per game!");
+                return false;
+            }
+            
+            gameState.timeFreezeUsed = true;
+            gameState.timeFreezeActive = color;
+            alert("Opponent's next turn will be skipped!");
+            return true;
+        }
+        
+        function medusaPower(color) {
+            // Find all rooks
+            const rooks = [];
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.type === 'rook' && piece.color === color) {
+                        rooks.push({ row, col });
+                    }
+                }
+            }
+            
+            if (rooks.length === 0) {
+                alert("You have no rooks to use Medusa's Gaze!");
+                return false;
+            }
+            
+            gameState.usingMedusa = true;
+            gameState.medusaRook = null;
+            alert("Select a rook to use Medusa's Gaze");
+            return true;
+        }
+        
+        function divineBishopPower(color) {
+            // Automatically applied during move calculation
+            return true;
+        }
+        
+        function phoenixRebirthPower(color) {
+            const captured = gameState.capturedPieces[color];
+            if (captured.length === 0) {
+                alert("No pieces to revive!");
+                return false;
+            }
+            
+            // Find most valuable piece (simple ranking)
+            const pieceValues = { queen: 9, rook: 5, bishop: 3, knight: 3, pawn: 1 };
+            let bestPiece = null;
+            let highestValue = 0;
+            
+            for (const piece of captured) {
+                const value = pieceValues[piece.type] || 0;
+                if (value > highestValue) {
+                    highestValue = value;
+                    bestPiece = piece;
+                }
+            }
+            
+            if (!bestPiece) {
+                alert("No valuable pieces to revive!");
+                return false;
+            }
+            
+            // Find starting row for this color
+            const backRow = color === 'white' ? 7 : 0;
+            
+            // Try to place on original square if available
+            let placed = false;
+            for (let col = 0; col < 8; col++) {
+                if (!gameState.board[backRow][col]) {
+                    gameState.board[backRow][col] = { ...bestPiece, hasMoved: true };
+                    gameState.capturedPieces[color] = gameState.capturedPieces[color].filter(p => p !== bestPiece);
+                    placed = true;
+                    
+                    // Add animation
+                    const square = document.querySelector(`.square[data-row="${backRow}"][data-col="${col}"]`);
+                    if (square) {
+                        const anim = document.createElement('div');
+                        anim.className = 'power-animation phoenix-animation';
+                        square.appendChild(anim);
+                        setTimeout(() => anim.remove(), 1000);
+                    }
+                    
+                    break;
+                }
+            }
+            
+            if (!placed) {
+                alert("No space to revive the piece!");
+                return false;
+            }
+            
+            // Skip turn
+            gameState.currentPlayer = color === 'white' ? 'black' : 'white';
+            
+            // Record the move
+            gameState.moveHistory.push({
+                special: `Phoenix Rebirth revived ${bestPiece.type}`
+            });
+            updateHistoryDisplay();
+            
+            playSound('power');
+            updateBoardDisplay();
+            updateGameStatus();
+            return true;
+        }
+        
+        function zeusWrathPower(color) {
+            const enemyColor = color === 'white' ? 'black' : 'white';
+            let enemyPieces = [];
+            
+            // Find all enemy pieces (except king)
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.color === enemyColor && piece.type !== 'king') {
+                        enemyPieces.push({ row, col });
+                    }
+                }
+            }
+            
+            if (enemyPieces.length === 0) {
+                alert("No valid pieces to strike!");
+                return false;
+            }
+            
+            // Select random enemy piece
+            const target = enemyPieces[Math.floor(Math.random() * enemyPieces.length)];
+            const piece = gameState.board[target.row][target.col];
+            
+            // Add to captured pieces
+            gameState.capturedPieces[enemyColor].push(piece);
+            gameState.board[target.row][target.col] = null;
+            
+            // Add animation
+            const square = document.querySelector(`.square[data-row="${target.row}"][data-col="${target.col}"]`);
+            if (square) {
+                const anim = document.createElement('div');
+                anim.className = 'power-animation lightning-animation';
+                square.appendChild(anim);
+                setTimeout(() => anim.remove(), 500);
+            }
+            
+            // Record the "move"
+            gameState.moveHistory.push({
+                special: `Zeus' Wrath strikes ${piece.type} at ${String.fromCharCode(97 + target.col)}${8 - target.row}`
+            });
+            updateHistoryDisplay();
+            
+            playSound('power');
+            return true;
+        }
+        
+        function joePower(color) {
+            gameState.joeActive = color;
+            
+            // Add animation to queen
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.type === 'queen' && piece.color === color) {
+                        const square = document.querySelector(`.square[data-row="${row}"][data-col="${col}"]`);
+                        if (square) {
+                            const anim = document.createElement('div');
+                            anim.className = 'power-animation joe-animation';
+                            square.appendChild(anim);
+                            setTimeout(() => anim.remove(), 1000);
+                        }
+                    }
+                }
+            }
+            
+            alert("Your queen now moves like a knight and wears cool sunglasses! 😎");
+            return true;
+        }
+        
+        // Timer functions
+        function initTimers() {
+            clearInterval(gameState.timeControls.timerInterval);
+            
+            gameState.timeControls.whiteTime = gameState.timeControls.timeLimit;
+            gameState.timeControls.blackTime = gameState.timeControls.timeLimit;
+            gameState.timeControls.lastUpdate = Date.now();
+            
+            updateTimerDisplay();
+            
+            if (gameState.timeControls.timeLimit > 0) {
+                gameState.timeControls.timerInterval = setInterval(updateTimers, 1000);
+                gameState.timeControls.active = true;
+            } else {
+                gameState.timeControls.active = false;
+            }
+        }
+        
+        function updateTimers() {
+            const now = Date.now();
+            const elapsed = (now - gameState.timeControls.lastUpdate) / 1000;
+            gameState.timeControls.lastUpdate = now;
+            
+            if (gameState.currentPlayer === 'white') {
+                gameState.timeControls.whiteTime = Math.max(0, gameState.timeControls.whiteTime - elapsed);
+            } else {
+                gameState.timeControls.blackTime = Math.max(0, gameState.timeControls.blackTime - elapsed);
+            }
+            
+            updateTimerDisplay();
+            
+            // Check for timeout
+            if (gameState.timeControls.whiteTime <= 0) {
+                endGameByTimeout('white');
+            } else if (gameState.timeControls.blackTime <= 0) {
+                endGameByTimeout('black');
+            }
+        }
+        
+        function updateTimerDisplay() {
+            whiteTimer.textContent = formatTime(gameState.timeControls.whiteTime);
+            blackTimer.textContent = formatTime(gameState.timeControls.blackTime);
+            
+            // Highlight when time is low (under 30 seconds)
+            whiteTimer.classList.toggle('timer-low', gameState.timeControls.whiteTime <= 30 && gameState.timeControls.whiteTime > 0);
+            blackTimer.classList.toggle('timer-low', gameState.timeControls.blackTime <= 30 && gameState.timeControls.blackTime > 0);
+            
+            // Play clock sound when time is critical
+            if ((gameState.timeControls.whiteTime <= 10 && gameState.currentPlayer === 'white') || 
+                (gameState.timeControls.blackTime <= 10 && gameState.currentPlayer === 'black')) {
+                playSound('clock');
+            }
+        }
+        
+        function formatTime(seconds) {
+            if (gameState.timeControls.timeLimit === 0) return "∞";
+            
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        function endGameByTimeout(color) {
+            clearInterval(gameState.timeControls.timerInterval);
+            gameState.gameOver = true;
+            playSound('checkmate');
+            showGameOver(`${color === 'white' ? 'Black' : 'White'} wins by timeout!`);
+        }
+        
+        // Move history functions
+        function viewHistory(direction) {
+            if (direction < 0 && gameState.historyIndex > 0) {
+                // Move backward
+                gameState.historyIndex--;
+                applyHistoryState();
+                gameState.viewingHistory = true;
+            } 
+            else if (direction > 0 && gameState.historyIndex < gameState.moveHistory.length) {
+                // Move forward
+                gameState.historyIndex++;
+                applyHistoryState();
+                gameState.viewingHistory = gameState.historyIndex < gameState.moveHistory.length;
+            }
+            
+            updateHistoryDisplay();
+        }
+        
+        function applyHistoryState() {
+            // Reset to initial board
+            gameState.board = createInitialBoard();
+            gameState.capturedPieces = { white: [], black: [] };
+            gameState.frozenPieces = [];
+            
+            // Replay moves up to history index
+            for (let i = 0; i < gameState.historyIndex; i++) {
+                const move = gameState.moveHistory[i];
+                
+                if (move.special) {
+                    // Handle special moves (powers)
+                    if (move.special.includes("Medusa's Gaze")) {
+                        const parts = move.special.split(' ');
+                        const type = parts[2];
+                        const col = parts[4].charCodeAt(0) - 97;
+                        const row = 8 - parseInt(parts[4].substring(1));
+                        gameState.frozenPieces.push({ row, col });
+                    }
+                    continue;
+                }
+                
+                const piece = move.piece;
+                
+                // Handle captures
+                if (move.captured) {
+                    gameState.capturedPieces[move.captured.color].push(move.captured);
+                }
+                
+                // Handle en passant
+                if (move.isEnPassant) {
+                    gameState.board[move.capturedPawnRow][move.capturedPawnCol] = null;
+                }
+                
+                // Move the piece
+                gameState.board[move.to.row][move.to.col] = piece;
+                gameState.board[move.from.row][move.from.col] = null;
+                
+                // Handle pawn promotion
+                if (piece.type === 'pawn' && (move.to.row === 0 || move.to.row === 7)) {
+                    gameState.board[move.to.row][move.to.col] = { type: 'queen', color: piece.color, hasMoved: true };
+                }
+            }
+            
+            updateBoardDisplay();
+        }
+        
+        function updateHistoryDisplay() {
+            const historyContainer = document.getElementById('move-history');
+            historyContainer.innerHTML = '';
+            
+            gameState.moveHistory.forEach((move, index) => {
+                const entry = document.createElement('div');
+                entry.className = `move-entry ${index < gameState.historyIndex ? 'past' : ''} ${index === gameState.historyIndex - 1 ? 'current' : ''}`;
+                
+                if (move.special) {
+                    entry.textContent = `${index + 1}. ${move.special}`;
+                } else {
+                    const pieceSymbol = getPieceSymbol(move.piece);
+                    const fromPos = `${String.fromCharCode(97 + move.from.col)}${8 - move.from.row}`;
+                    const toPos = `${String.fromCharCode(97 + move.to.col)}${8 - move.to.row}`;
+                    
+                    entry.textContent = `${index + 1}. ${pieceSymbol} ${fromPos} → ${toPos}`;
+                    if (move.captured) {
+                        entry.textContent += ` (captures ${move.captured.type})`;
+                    }
+                }
+                
+                historyContainer.appendChild(entry);
+            });
+            
+            if (gameState.historyIndex === gameState.moveHistory.length) {
+                const current = document.createElement('div');
+                current.className = 'move-entry current';
+                current.textContent = gameState.moveHistory.length > 0 ? 
+                    `Current position (move ${gameState.moveHistory.length})` : 
+                    "Game started";
+                historyContainer.appendChild(current);
+            }
+            
+            // Scroll to bottom
+            historyContainer.scrollTop = historyContainer.scrollHeight;
+        }
+        
+        // Simple AI implementation
+        function makeAIMove() {
+            if (gameState.gameOver || gameState.currentPlayer !== 'black') return;
+            
+            // Get all possible moves
+            let allMoves = [];
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const piece = gameState.board[row][col];
+                    if (piece && piece.color === 'black') {
+                        const moves = getValidMoves(row, col);
+                        moves.forEach(move => {
+                            allMoves.push({
+                                from: { row, col },
+                                to: { row: move.row, col: move.col },
+                                isCapture: move.isCapture,
+                                piece: piece
+                            });
+                        });
+                    }
+                }
+            }
+            
+            if (allMoves.length === 0) {
+                // No moves available - checkmate or stalemate
+                if (isInCheck('black')) {
+                    gameState.gameOver = true;
+                    playSound('checkmate');
+                    showGameOver("Checkmate! White wins!");
+                } else {
+                    gameState.gameOver = true;
+                    playSound('checkmate');
+                    showGameOver("Stalemate! Game ends in a draw.");
+                }
+                updateBoardDisplay();
+                return;
+            }
+            
+            // Prioritize captures
+            const captures = allMoves.filter(move => move.isCapture);
+            if (captures.length > 0) {
+                allMoves = captures;
+            }
+            
+            // Randomly select a move
+            const randomMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+            
+            // Check if it's an en passant capture
+            const isEnPassant = gameState.enPassantTarget && 
+                               gameState.enPassantTarget.row === randomMove.to.row && 
+                               gameState.enPassantTarget.col === randomMove.to.col &&
+                               randomMove.piece.type === 'pawn';
+            
+            // Make the move
+            makeMove(randomMove.from.row, randomMove.from.col, randomMove.to.row, randomMove.to.col, isEnPassant);
+            
+            // If the AI has a power and hasn't used it yet, consider using it
+            if (!gameState.p2PowerUsed && !gameState.p2Power.isPassive && Math.random() > 0.7) {
+                usePower('black');
+            }
+        }
+        
+        // Start with the main menu
+        showMainMenu();
+    </script>
+</body>
+</html>
